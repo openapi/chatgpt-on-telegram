@@ -78,6 +78,11 @@ def summarize_response_payload(payload: dict) -> str:
                 f"{index}:function_call:name={item.get('name', '?')}:"
                 f"call_id={item.get('call_id', item.get('id', '?'))}"
             )
+        elif item_type == "mcp_approval_request":
+            summaries.append(
+                f"{index}:mcp_approval_request:name={item.get('name', '?')}:"
+                f"server={item.get('server_label', '?')}"
+            )
         else:
             summaries.append(f"{index}:{item_type}")
 
@@ -108,11 +113,12 @@ def extract_text_from_content(content: object) -> list[str]:
 
 
 def extract_response_text(payload: dict) -> str:
-    output_text = payload.get("output_text")
-    if isinstance(output_text, str) and output_text.strip():
-        return output_text.strip()
-
-    chunks = extract_text_from_content(payload.get("output", []))
+    # Only extract text from final message items, not from reasoning or intermediate items.
+    chunks: list[str] = []
+    for item in payload.get("output", []):
+        if not isinstance(item, dict) or item.get("type") != "message":
+            continue
+        chunks.extend(extract_text_from_content(item.get("content", [])))
 
     if chunks:
         return "\n".join(chunks).strip()
@@ -235,12 +241,17 @@ def ask_gpt(message: str, chat_id: int) -> str:
         if isinstance(response_id, str):
             LAST_RESPONSE_IDS[chat_id] = response_id
 
+        output_items = response_payload.get("output", [])
         function_calls = [
-            item for item in response_payload.get("output", [])
+            item for item in output_items
             if isinstance(item, dict) and item.get("type") == "function_call"
         ]
+        approval_requests = [
+            item for item in output_items
+            if isinstance(item, dict) and item.get("type") == "mcp_approval_request"
+        ]
 
-        if not function_calls:
+        if not function_calls and not approval_requests:
             answer = extract_response_text(response_payload)
             if answer == "I did not receive a text response from GPT.":
                 log_event(
@@ -255,23 +266,37 @@ def ask_gpt(message: str, chat_id: int) -> str:
                 )
             return answer
 
-        tool_outputs = []
+        continuation_inputs: list[dict] = []
+
+        for req in approval_requests:
+            log_event(
+                f"Auto-approving MCP tool: name={req.get('name', '?')} "
+                f"server={req.get('server_label', '?')} "
+                f"client_request_id={client_request_id}"
+            )
+            continuation_inputs.append({
+                "type": "mcp_approval_response",
+                "approve": True,
+                "approval_request_id": req.get("id", ""),
+            })
+
         for call in function_calls:
             call_id = call.get("call_id") or call.get("id", "")
             output = execute_tool_call(call.get("name", ""), call.get("arguments", "{}"))
-            tool_outputs.append({
+            continuation_inputs.append({
                 "type": "function_call_output",
                 "call_id": call_id,
                 "output": output,
             })
 
         log_event(
-            f"Submitting {len(tool_outputs)} tool output(s) "
+            f"Continuing with {len(continuation_inputs)} input(s) "
+            f"({len(approval_requests)} approvals, {len(function_calls)} tool outputs) "
             f"client_request_id={client_request_id} chat_id={chat_id}"
         )
         request_payload = {
             "previous_response_id": response_id,
-            "input": tool_outputs,
+            "input": continuation_inputs,
         }
 
     return "GPT did not complete after the maximum number of tool-call iterations."
