@@ -1,5 +1,7 @@
+import html
 import json
 import os
+import re
 import time
 import uuid
 import urllib.error
@@ -137,6 +139,31 @@ def extract_error_message(body: str) -> str:
         return str(error.get("message") or error)
 
     return str(payload)
+
+
+def format_for_telegram(text: str) -> str:
+    # Split into code blocks (preserved as-is) and regular text segments.
+    segments = re.split(r'(```(?:[^\n]*)?\n[\s\S]*?```|`[^`\n]+`)', text)
+    result: list[str] = []
+
+    for i, segment in enumerate(segments):
+        if i % 2 == 1:
+            if segment.startswith('```'):
+                code = re.sub(r'^```[^\n]*\n?', '', segment)
+                code = re.sub(r'\n?```$', '', code)
+                result.append(f'<pre>{html.escape(code)}</pre>')
+            else:
+                result.append(f'<code>{html.escape(segment[1:-1])}</code>')
+        else:
+            safe = html.escape(segment)
+            safe = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', safe)
+            safe = re.sub(r'__(.+?)__', r'<b>\1</b>', safe)
+            safe = re.sub(r'\*([^*\n]+)\*', r'<i>\1</i>', safe)
+            safe = re.sub(r'_([^_\n]+)_', r'<i>\1</i>', safe)
+            safe = re.sub(r'^#{1,6}\s+(.+)$', r'<b>\1</b>', safe, flags=re.MULTILINE)
+            result.append(safe)
+
+    return ''.join(result)
 
 
 def execute_tool_call(name: str, arguments_json: str) -> str:
@@ -331,7 +358,10 @@ async def answer_with_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     chat_id = update.effective_chat.id if update.effective_chat else 0
     log_event(f"Received text message from chat_id={chat_id}")
     answer = ask_gpt(update.message.text, chat_id)
-    await update.message.reply_text(answer)
+    try:
+        await update.message.reply_text(format_for_telegram(answer), parse_mode="HTML")
+    except Exception:
+        await update.message.reply_text(answer)
     log_event(f"Sent reply to chat_id={chat_id}")
 
 
