@@ -25,402 +25,6 @@ MAX_FORM_SIZE = 64 * 1024
 BOT_PROCESS: subprocess.Popen | None = None
 
 
-HTML_PAGE = """<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChatGPT on Telegram</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --page: #eef3f8;
-      --panel: #ffffff;
-      --ink: #18202f;
-      --muted: #637085;
-      --line: #d9e0ea;
-      --blue: #2481cc;
-      --green: #12a884;
-      --dark: #202938;
-      --focus: #f1b642;
-      --danger: #b42318;
-      --ok: #087f5b;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 20% 12%, rgba(18, 168, 132, 0.12), transparent 32%),
-        radial-gradient(circle at 82% 4%, rgba(36, 129, 204, 0.14), transparent 30%),
-        var(--page);
-    }
-
-    main {
-      width: min(1040px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 56px 0;
-    }
-
-    .shell {
-      display: grid;
-      gap: 24px;
-    }
-
-    .masthead {
-      display: grid;
-      gap: 20px;
-      justify-items: center;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(36px, 7vw, 72px);
-      line-height: 0.96;
-      letter-spacing: 0;
-    }
-
-    .equation {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .brand {
-      display: grid;
-      width: 72px;
-      height: 72px;
-      place-items: center;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.86);
-      color: var(--dark);
-      box-shadow: 0 18px 36px rgba(24, 32, 47, 0.11);
-    }
-
-    .brand img {
-      width: 42px;
-      height: 42px;
-      object-fit: contain;
-    }
-
-    .operator {
-      min-width: 20px;
-      color: var(--dark);
-      font-size: 28px;
-      font-weight: 900;
-    }
-
-    .emoji {
-      font-size: 38px;
-      line-height: 1;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 18px 48px rgba(24, 32, 47, 0.08);
-      overflow: hidden;
-      backdrop-filter: blur(14px);
-    }
-
-    form {
-      display: grid;
-      gap: 18px;
-      padding: 24px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 18px;
-      align-items: end;
-    }
-
-    .field {
-      display: grid;
-      gap: 8px;
-    }
-
-    label {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    input,
-    select {
-      width: 100%;
-      min-height: 48px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 0 14px;
-      color: var(--ink);
-      background: #fff;
-      font: inherit;
-      outline: none;
-    }
-
-    input:focus,
-    select:focus {
-      border-color: var(--focus);
-      box-shadow: 0 0 0 3px rgba(241, 182, 66, 0.22);
-    }
-
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding-top: 4px;
-    }
-
-    button {
-      min-height: 48px;
-      border: 0;
-      border-radius: 8px;
-      padding: 0 20px;
-      color: #fff;
-      background: var(--dark);
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #111827;
-    }
-
-    button:disabled {
-      cursor: wait;
-      opacity: 0.72;
-    }
-
-    .status {
-      min-height: 24px;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .status.error {
-      color: var(--danger);
-    }
-
-    .status.ok {
-      color: var(--ok);
-    }
-
-    .launch-box {
-      display: none;
-      gap: 12px;
-      padding: 18px 24px 24px;
-      border-top: 1px solid var(--line);
-      background: #f8fafc;
-    }
-
-    .launch-box.visible {
-      display: grid;
-    }
-
-    .launch-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .launch-row input {
-      color: var(--muted);
-      background: #fff;
-    }
-
-    .icon-button,
-    .open-link {
-      display: grid;
-      width: 48px;
-      height: 48px;
-      place-items: center;
-      border-radius: 8px;
-      color: #fff;
-      background: var(--dark);
-      text-decoration: none;
-    }
-
-    .icon-button svg,
-    .open-link svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-    }
-
-    @media (max-width: 720px) {
-      main {
-        width: min(100% - 24px, 1040px);
-        padding: 32px 0;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      form {
-        padding: 18px;
-      }
-
-      .brand {
-        width: 58px;
-        height: 58px;
-        border-radius: 18px;
-      }
-
-      .brand img {
-        width: 34px;
-        height: 34px;
-      }
-
-      .operator {
-        display: none;
-      }
-
-      .action-row,
-      button,
-      .launch-row {
-        width: 100%;
-      }
-
-      .launch-row {
-        grid-template-columns: 1fr;
-      }
-
-      .icon-button,
-      .open-link {
-        width: 100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="shell">
-      <section class="masthead" aria-labelledby="page-title">
-        <h1 id="page-title">ChatGPT on Telegram</h1>
-        <div class="equation" aria-label="ChatGPT plus Telegram uguale Openapi plus emoji con occhiali da sole">
-          <span class="brand" title="ChatGPT"><img src="/assets/images/chatgpt.png" alt="ChatGPT"></span>
-          <span class="operator">+</span>
-          <span class="brand" title="Telegram"><img src="/assets/images/telegram.png" alt="Telegram"></span>
-          <span class="operator">=</span>
-          <span class="brand" title="Openapi"><img src="/assets/images/openapi.png" alt="Openapi"></span>
-          <span class="operator">+</span>
-          <span class="brand" title="Cool"><span class="emoji" aria-label="Emoji con occhiali da sole">😎</span></span>
-        </div>
-      </section>
-
-      <section class="panel" aria-label="Configurazione bot">
-        <form id="bot-form" method="post" action="/start">
-          <div class="field">
-            <label for="chatgpt_prompt_id">ChatGPT Prompt ID</label>
-            <input id="chatgpt_prompt_id" name="chatgpt_prompt_id" type="password" autocomplete="off" spellcheck="false" required>
-          </div>
-
-          <div class="field">
-            <label for="telegram_bot_token">Telegram Bot HTTP API Token</label>
-            <input id="telegram_bot_token" name="telegram_bot_token" type="password" autocomplete="off" spellcheck="false" required>
-          </div>
-
-          <div class="action-row">
-            <div id="status" class="status" role="status" aria-live="polite"></div>
-            <button id="start-button" type="submit">Start My Bot</button>
-          </div>
-        </form>
-
-        <div id="launch-box" class="launch-box" aria-label="Super URL generato">
-          <label for="launch-url">Super URL</label>
-          <div class="launch-row">
-            <input id="launch-url" type="password" readonly>
-            <button id="copy-link" class="icon-button" type="button" title="Copia link" aria-label="Copia link">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-            <a id="open-link" class="open-link" href="#" title="Apri link" aria-label="Apri link">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 3h6v6"></path>
-                <path d="M10 14 21 3"></path>
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <script>
-    const form = document.querySelector("#bot-form");
-    const button = document.querySelector("#start-button");
-    const statusBox = document.querySelector("#status");
-    const launchBox = document.querySelector("#launch-box");
-    const launchUrl = document.querySelector("#launch-url");
-    const copyLink = document.querySelector("#copy-link");
-    const openLink = document.querySelector("#open-link");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      button.disabled = true;
-      statusBox.className = "status";
-      statusBox.textContent = "Starting...";
-
-      try {
-        const response = await fetch("/start", {
-          method: "POST",
-          body: new URLSearchParams(new FormData(form)),
-        });
-        const payload = await response.json();
-        statusBox.textContent = payload.message;
-        statusBox.className = response.ok ? "status ok" : "status error";
-        if (response.ok && payload.launch_url) {
-          launchUrl.value = payload.launch_url;
-          openLink.href = payload.launch_url;
-          launchBox.classList.add("visible");
-        }
-      } catch (error) {
-        statusBox.textContent = "Errore durante l'avvio del bot.";
-        statusBox.className = "status error";
-      } finally {
-        button.disabled = false;
-      }
-    });
-
-    copyLink.addEventListener("click", async () => {
-      if (!launchUrl.value) {
-        return;
-      }
-
-      await navigator.clipboard.writeText(launchUrl.value);
-      statusBox.textContent = "Link copiato.";
-      statusBox.className = "status ok";
-    });
-  </script>
-</body>
-</html>
-"""
-
-
 def get_bot_python() -> str:
     venv_python = BASE_DIR / ".venv" / "bin" / "python"
     if venv_python.exists():
@@ -507,6 +111,7 @@ def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
     required_fields = {
         "chatgpt_prompt_id": "ChatGPT Prompt ID",
         "telegram_bot_token": "Telegram Bot HTTP API Token",
+        "openai_api_key": "OpenAI API Key",
     }
     missing = [
         label for field, label in required_fields.items() if not form.get(field, "").strip()
@@ -517,6 +122,7 @@ def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
     return True, "", {
         "chatgpt_prompt_id": form["chatgpt_prompt_id"].strip(),
         "telegram_bot_token": form["telegram_bot_token"].strip(),
+        "openai_api_key": form["openai_api_key"].strip(),
     }
 
 
@@ -539,6 +145,7 @@ def start_bot(config: dict[str, str]) -> tuple[bool, str, str | None]:
         {
             "CHATGPT_PROMPT_ID": normalized["chatgpt_prompt_id"],
             "TELEGRAM_BOT_TOKEN": normalized["telegram_bot_token"],
+            "OPENAI_API_KEY": normalized["openai_api_key"],
         }
     )
 
@@ -567,7 +174,7 @@ class AppHandler(BaseHTTPRequestHandler):
         parsed_url = urlparse(self.path)
 
         if parsed_url.path == "/":
-            self.send_html(HTML_PAGE)
+            self.send_static("/index.html")
             return
 
         if parsed_url.path.startswith("/assets/"):
@@ -578,27 +185,15 @@ class AppHandler(BaseHTTPRequestHandler):
             self.launch_from_url(parsed_url.path.removeprefix("/launch/"))
             return
 
-        if parsed_url.path == "/status":
-            running = BOT_PROCESS is not None and BOT_PROCESS.poll() is None
-            self.send_json(
-                HTTPStatus.OK,
-                {
-                    "running": running,
-                    "pid": BOT_PROCESS.pid if running and BOT_PROCESS else None,
-                },
-            )
-            return
-
         if parsed_url.path == "/favicon.ico":
-            self.send_response(HTTPStatus.NO_CONTENT)
-            self.end_headers()
+            self.send_static("/assets/favicon.ico")
             return
 
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_POST(self) -> None:
         parsed_url = urlparse(self.path)
-        if parsed_url.path != "/start":
+        if parsed_url.path != "/setup":
             self.send_error(HTTPStatus.NOT_FOUND)
             return
 
@@ -619,17 +214,11 @@ class AppHandler(BaseHTTPRequestHandler):
             self.send_json(HTTPStatus.BAD_REQUEST, {"message": str(error)})
             return
 
-        ok, message, username = start_bot(config)
-        if not ok:
-            self.send_json(HTTPStatus.BAD_REQUEST, {"message": message})
-            return
-
         self.send_json(
             HTTPStatus.OK,
             {
-                "message": message,
-                "launch_url": launch_url,
-                "telegram_url": f"https://t.me/{username}",
+                "message": "Chat URL creato. Aprilo per avviare il bot.",
+                "chat_url": launch_url,
             },
         )
 

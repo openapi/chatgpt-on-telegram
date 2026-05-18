@@ -44,10 +44,10 @@ install:
 	$(PIP) install -r requirements.txt
 
 start:
-	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" OPENAI_API_KEY="$(OPENAI_API_KEY)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
+	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
 
 docker-start:
-	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" OPENAI_API_KEY="$(OPENAI_API_KEY)" docker compose -f compose.yml up --build
+	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" docker compose -f compose.yml up --build
 
 docker-stop:
 	docker compose -f compose.yml down

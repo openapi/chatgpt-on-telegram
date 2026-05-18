@@ -12,15 +12,15 @@ make install
 ## Run Locally
 
 ```bash
-export OPENAI_API_KEY="sk-..."
 export SERVER_SECRET_KEY="any-private-string"
 make start
 ```
 
 Open `http://127.0.0.1:8000`, fill in `ChatGPT Prompt ID` and
-`Telegram Bot HTTP API Token`, then press `Start My Bot`.
+`Telegram Bot HTTP API Token` and `OpenAI API Key`, then create the signed Chat
+URL.
 
-The server creates a Super URL encrypted and signed with `SERVER_SECRET_KEY`.
+The server creates a Chat URL encrypted and signed with `SERVER_SECRET_KEY`.
 You can keep that link and open it later to restart the bot with the same setup;
 after startup it redirects to the bot's Telegram chat.
 
@@ -30,7 +30,6 @@ database.
 ## Run With Docker
 
 ```bash
-export OPENAI_API_KEY="sk-..."
 export SERVER_SECRET_KEY="any-private-string"
 make docker-start
 ```
