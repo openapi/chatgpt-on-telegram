@@ -297,6 +297,7 @@ def ask_gpt(message: str, chat_id: int) -> str:
         request_payload = {
             "previous_response_id": response_id,
             "input": continuation_inputs,
+            **base_config,
         }
 
     return "GPT did not complete after the maximum number of tool-call iterations."
