@@ -7,6 +7,7 @@ import mimetypes
 import os
 import subprocess
 import sys
+import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,10 +20,10 @@ from cryptography.fernet import Fernet, InvalidToken
 
 BASE_DIR = Path(__file__).resolve().parent
 BOT_FILE = BASE_DIR / "bot.py"
-LOG_FILE = BASE_DIR / "bot.log"
 PUBLIC_DIR = BASE_DIR / "public"
 MAX_FORM_SIZE = 64 * 1024
-BOT_PROCESS: subprocess.Popen | None = None
+BOT_PROCESSES: dict[str, subprocess.Popen] = {}
+BOT_PIDS: dict[str, int] = {}
 
 
 def get_bot_python() -> str:
@@ -36,7 +37,7 @@ def get_bot_python() -> str:
 def get_server_fernet() -> Fernet:
     env_key = os.environ.get("SERVER_SECRET_KEY", "").strip()
     if not env_key:
-        raise ValueError("SERVER_SECRET_KEY mancante.")
+        raise ValueError("SERVER_SECRET_KEY is missing.")
 
     key = base64.urlsafe_b64encode(hashlib.sha256(env_key.encode("utf-8")).digest())
     return Fernet(key)
@@ -51,7 +52,7 @@ def decrypt_setup(token: str) -> dict[str, str]:
     payload = get_server_fernet().decrypt(token.encode("utf-8"))
     decoded = json.loads(payload.decode("utf-8"))
     if not isinstance(decoded, dict):
-        raise ValueError("Payload non valido.")
+        raise ValueError("Invalid payload.")
 
     return {str(key): str(value) for key, value in decoded.items()}
 
@@ -68,7 +69,7 @@ def build_launch_url(handler: BaseHTTPRequestHandler, config: dict[str, str]) ->
     return f"{get_origin(handler)}/launch/{quote(token, safe='')}"
 
 
-def fetch_bot_username(telegram_token: str) -> str:
+def fetch_bot_identity(telegram_token: str) -> tuple[str, str]:
     request = urllib.request.Request(
         f"https://api.telegram.org/bot{telegram_token}/getMe",
         method="GET",
@@ -79,32 +80,77 @@ def fetch_bot_username(telegram_token: str) -> str:
             payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="replace")
-        raise ValueError(f"Telegram ha risposto con errore {error.code}: {body}") from error
+        raise ValueError(f"Telegram returned error {error.code}: {body}") from error
     except urllib.error.URLError as error:
-        raise ValueError(f"Impossibile contattare Telegram: {error.reason}") from error
+        raise ValueError(f"Unable to reach Telegram: {error.reason}") from error
 
-    username = payload.get("result", {}).get("username")
+    result = payload.get("result", {})
+    username = result.get("username")
+    bot_id = result.get("id")
     if not payload.get("ok") or not isinstance(username, str) or not username:
-        raise ValueError("Token Telegram valido ma username bot non trovato.")
+        raise ValueError("Telegram token is valid, but bot username was not found.")
 
-    return username
+    if bot_id is None:
+        return username, username
+
+    return username, str(bot_id)
 
 
-def stop_bot() -> None:
-    global BOT_PROCESS
-
-    if BOT_PROCESS is None:
+def stop_bot(bot_key: str) -> None:
+    process = BOT_PROCESSES.pop(bot_key, None)
+    BOT_PIDS.pop(bot_key, None)
+    if process is None:
         return
 
-    if BOT_PROCESS.poll() is None:
-        BOT_PROCESS.terminate()
+    if process.poll() is None:
+        process.terminate()
         try:
-            BOT_PROCESS.wait(timeout=5)
+            process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            BOT_PROCESS.kill()
-            BOT_PROCESS.wait(timeout=5)
+            process.kill()
+            process.wait(timeout=5)
 
-    BOT_PROCESS = None
+
+def stop_all_bots() -> None:
+    for bot_key in list(BOT_PROCESSES):
+        stop_bot(bot_key)
+
+
+def cleanup_finished_bots() -> None:
+    for bot_key, process in list(BOT_PROCESSES.items()):
+        if process.poll() is not None:
+            BOT_PROCESSES.pop(bot_key, None)
+            BOT_PIDS.pop(bot_key, None)
+
+
+def mask_secret(value: str) -> str:
+    if len(value) <= 10:
+        return "*" * len(value)
+
+    return f"{value[:6]}...{value[-4:]}"
+
+
+def log_bot(username: str, bot_key: str, pid: int | None, message: str) -> None:
+    pid_label = f" pid={pid}" if pid is not None else ""
+    print(f"[@{username} bot={bot_key}{pid_label}] {message}", flush=True)
+
+
+def forward_bot_logs(process: subprocess.Popen, username: str, bot_key: str) -> None:
+    if process.stdout is None:
+        return
+
+    for line in process.stdout:
+        log_bot(username, bot_key, process.pid, line.rstrip())
+
+
+def start_bot_log_forwarder(process: subprocess.Popen, username: str, bot_key: str) -> None:
+    thread = threading.Thread(
+        target=forward_bot_logs,
+        args=(process, username, bot_key),
+        name=f"bot-log-forwarder-{bot_key}",
+        daemon=True,
+    )
+    thread.start()
 
 
 def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
@@ -117,7 +163,7 @@ def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
         label for field, label in required_fields.items() if not form.get(field, "").strip()
     ]
     if missing:
-        return False, f"Campi mancanti: {', '.join(missing)}.", {}
+        return False, f"Missing fields: {', '.join(missing)}.", {}
 
     return True, "", {
         "chatgpt_prompt_id": form["chatgpt_prompt_id"].strip(),
@@ -127,39 +173,54 @@ def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
 
 
 def start_bot(config: dict[str, str]) -> tuple[bool, str, str | None]:
-    global BOT_PROCESS
-
     ok, message, normalized = normalize_setup(config)
     if not ok:
         return False, message, None
 
     try:
-        username = fetch_bot_username(normalized["telegram_bot_token"])
+        username, bot_key = fetch_bot_identity(normalized["telegram_bot_token"])
     except ValueError as error:
         return False, str(error), None
 
-    stop_bot()
+    cleanup_finished_bots()
+    print(
+        "Launching bot with "
+        f"TELEGRAM_BOT_KEY={bot_key} "
+        f"CHATGPT_PROMPT_ID={normalized['chatgpt_prompt_id']} "
+        f"TELEGRAM_BOT_TOKEN={mask_secret(normalized['telegram_bot_token'])} "
+        f"OPENAI_API_KEY={mask_secret(normalized['openai_api_key'])}",
+        flush=True,
+    )
+
+    stop_bot(bot_key)
 
     env = os.environ.copy()
     env.update(
         {
             "CHATGPT_PROMPT_ID": normalized["chatgpt_prompt_id"],
             "TELEGRAM_BOT_TOKEN": normalized["telegram_bot_token"],
+            "TELEGRAM_BOT_KEY": bot_key,
+            "TELEGRAM_BOT_USERNAME": username,
             "OPENAI_API_KEY": normalized["openai_api_key"],
         }
     )
 
-    with LOG_FILE.open("a", encoding="utf-8") as log:
-        log.write("\n--- Starting ChatGPT on Telegram bot ---\n")
-        BOT_PROCESS = subprocess.Popen(
-            [get_bot_python(), str(BOT_FILE)],
-            cwd=str(BASE_DIR),
-            env=env,
-            stdout=log,
-            stderr=subprocess.STDOUT,
-        )
+    log_bot(username, bot_key, None, "Starting ChatGPT on Telegram bot")
+    process = subprocess.Popen(
+        [get_bot_python(), str(BOT_FILE)],
+        cwd=str(BASE_DIR),
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
 
-    return True, f"Bot avviato. PID {BOT_PROCESS.pid}.", username
+    BOT_PROCESSES[bot_key] = process
+    BOT_PIDS[bot_key] = process.pid
+    start_bot_log_forwarder(process, username, bot_key)
+    print(f"Active Telegram bot PID map: {BOT_PIDS}", flush=True)
+    return True, f"Bot started. PID {process.pid}.", username
 
 
 def parse_form(body: bytes) -> dict[str, str]:
@@ -199,7 +260,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
         content_length = int(self.headers.get("Content-Length", "0"))
         if content_length > MAX_FORM_SIZE:
-            self.send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"message": "Form troppo grande."})
+            self.send_json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"message": "Form is too large."})
             return
 
         form = parse_form(self.rfile.read(content_length))
@@ -217,7 +278,7 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_json(
             HTTPStatus.OK,
             {
-                "message": "Chat URL creato. Aprilo per avviare il bot.",
+                "message": "Chat URL created. Open it to start the bot.",
                 "chat_url": launch_url,
             },
         )
@@ -226,7 +287,7 @@ class AppHandler(BaseHTTPRequestHandler):
         try:
             config = decrypt_setup(unquote(token))
         except (InvalidToken, ValueError, json.JSONDecodeError):
-            self.send_error(HTTPStatus.BAD_REQUEST, "Link non valido o non decifrabile.")
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid or unreadable link.")
             return
 
         ok, message, username = start_bot(config)
@@ -292,7 +353,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
 
-    atexit.register(stop_bot)
+    atexit.register(stop_all_bots)
 
     server = ThreadingHTTPServer((args.host, args.port), AppHandler)
     host, port = server.server_address
@@ -304,7 +365,7 @@ def main() -> None:
         pass
     finally:
         server.server_close()
-        stop_bot()
+        stop_all_bots()
 
 
 if __name__ == "__main__":

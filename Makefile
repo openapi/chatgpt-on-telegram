@@ -37,13 +37,17 @@ HOST ?= 127.0.0.1
 PORT ?= 8000
 SERVER_SECRET_KEY ?= local-development-secret
 
-.PHONY: install start docker-start docker-stop
+.PHONY: install kill-old start docker-start docker-stop
 
 install:
 	python3 -m venv .venv
 	$(PIP) install -r requirements.txt
 
-start:
+kill-old:
+	@pkill -f "$(CURDIR)/[s]erver.py" || true
+	@pkill -f "$(CURDIR)/[b]ot.py" || true
+
+start: kill-old
 	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
 
 docker-start:

@@ -318,6 +318,11 @@
       <section class="panel" aria-label="Configurazione bot">
         <form id="bot-form" method="post" action="/setup">
           <div class="field">
+            <label for="openai_api_key">OpenAI API Key</label>
+            <input id="openai_api_key" name="openai_api_key" type="password" autocomplete="off" spellcheck="false" required>
+          </div>
+
+          <div class="field">
             <label for="chatgpt_prompt_id">ChatGPT Prompt ID</label>
             <input id="chatgpt_prompt_id" name="chatgpt_prompt_id" type="password" autocomplete="off" spellcheck="false" required>
           </div>
@@ -325,11 +330,6 @@
           <div class="field">
             <label for="telegram_bot_token">Telegram Bot HTTP API Token</label>
             <input id="telegram_bot_token" name="telegram_bot_token" type="password" autocomplete="off" spellcheck="false" required>
-          </div>
-
-          <div class="field">
-            <label for="openai_api_key">OpenAI API Key</label>
-            <input id="openai_api_key" name="openai_api_key" type="password" autocomplete="off" spellcheck="false" required>
           </div>
 
           <div class="action-row">
@@ -341,14 +341,14 @@
         <div id="launch-box" class="launch-box" aria-label="Chat URL generato">
           <label for="chat-url">Chat URL</label>
           <div class="launch-row">
-            <a id="chat-url" class="chat-url" href="#"></a>
+            <a id="chat-url" class="chat-url" href="#" target="_blank" rel="noopener noreferrer"></a>
             <button id="copy-link" class="icon-button" type="button" title="Copia link" aria-label="Copia link">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
             </button>
-            <a id="open-link" class="open-link" href="#" title="Apri link" aria-label="Apri link">
+            <a id="open-link" class="open-link" href="#" target="_blank" rel="noopener noreferrer" title="Apri link" aria-label="Apri link">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M15 3h6v6"></path>
                 <path d="M10 14 21 3"></path>
