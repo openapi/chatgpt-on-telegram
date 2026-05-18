@@ -1,5 +1,7 @@
 import argparse
 import atexit
+import base64
+import hashlib
 import json
 import mimetypes
 import os
@@ -432,7 +434,8 @@ def get_server_fernet() -> Fernet:
     if not env_key:
         raise ValueError("SERVER_SECRET_KEY mancante.")
 
-    return Fernet(env_key.encode("utf-8"))
+    key = base64.urlsafe_b64encode(hashlib.sha256(env_key.encode("utf-8")).digest())
+    return Fernet(key)
 
 
 def encrypt_setup(config: dict[str, str]) -> str:
