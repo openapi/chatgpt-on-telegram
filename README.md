@@ -1,4 +1,14 @@
-# ChatGPT on Telegram
+<div align="center">
+  <a href="https://openapi.com/">
+    <img alt="Openapi CLI" src=".github/assets/images/repo-header.png" >
+  </a>
+
+  <h1>ChatGPT on Telegram</h1>
+  <h4>The command-line interface to interact with <a href="https://openapi.com/">Openapi®</a> APIs directly from your terminal</h4>
+
+[![License](https://img.shields.io/github/license/openapi/chatgpt-on-telegram?ts=1771243284)](LICENSE)
+[![Linux Foundation Member](https://img.shields.io/badge/Linux%20Foundation-Silver%20Member-003778?logo=linux-foundation&logoColor=white)](https://www.linuxfoundation.org/about/members)
+</div>
 
 Minimal Python server that connects Telegram bots to GPT through a stateless
 webhook flow. The server does not keep one process alive for each bot: setup
@@ -82,3 +92,41 @@ The app is exposed at `http://127.0.0.1:8000`. In `compose.yml`, host
 `DATA_PATH` is mounted into the container at `CONTAINER_DATA_PATH`
 (default `/data`). The container reads its storage location from the `DATA_PATH`
 environment variable.
+
+## Contributing
+
+Contributions are always welcome! Whether you want to report bugs, suggest new features, improve documentation, or contribute code, your help is appreciated.
+
+## Authors
+
+- Openapi Team ([@openapi-it](https://github.com/openapi-it))
+
+## Partners
+
+Meet our partners using Openapi or contributing to this project:
+
+- [Blank](https://www.blank.app/)
+- [Credit Safe](https://www.creditsafe.com/)
+- [Deliveroo](https://deliveroo.it/)
+- [Gruppo MOL](https://molgroupitaly.it/it/)
+- [Jakala](https://www.jakala.com/)
+- [Octotelematics](https://www.octotelematics.com/)
+- [OTOQI](https://otoqi.com/)
+- [PWC](https://www.pwc.com/)
+- [QOMODO S.R.L.](https://www.qomodo.me/)
+- [SOUNDREEF S.P.A.](https://www.soundreef.com/)
+
+## Our Commitments
+
+We believe in open source and we act on that belief. We became Silver Members
+of the Linux Foundation because we wanted to formally support the ecosystem
+we build on every day. Open standards, open collaboration, and open governance
+are part of how we work and how we think about software.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+The MIT License is a permissive open-source license that allows you to freely use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice and this permission notice are included in all copies or substantial portions of the software.
+
+For more details, see the full license text at the [MIT License page](https://choosealicense.com/licenses/mit/).
