@@ -457,7 +457,11 @@
       margin: 0;
       padding: 84px 24px 96px;
       overflow: hidden;
-      background: linear-gradient(90deg, rgba(6, 19, 31, 0.96) 0%, rgba(6, 19, 31, 0.88) 48%, rgba(6, 19, 31, 0.55) 100%), url("/assets/images/home-hero-bg.webp") center / cover no-repeat, var(--dark);
+      background-color: var(--dark);
+      background-image: linear-gradient(90deg, rgba(6, 19, 31, 0.92) 0%, rgba(6, 19, 31, 0.66) 42%, rgba(6, 19, 31, 0.00) 78%), url("/assets/images/home-hero-bg.webp");
+      background-position: left center, right center;
+      background-size: 100% 100%, auto 100%;
+      background-repeat: no-repeat;
     }
 
     .shell {
@@ -747,7 +751,11 @@
       .navbar img { height: 34px; }
       main {
         padding: 48px 18px 64px;
-        background: linear-gradient(180deg, rgba(6, 19, 31, 0.96) 0%, rgba(6, 19, 31, 0.84) 100%), url("/assets/images/home-hero-bg.webp") center top / cover no-repeat, var(--dark);
+        background-color: var(--dark);
+        background-image: linear-gradient(180deg, rgba(6, 19, 31, 0.88) 0%, rgba(6, 19, 31, 0.58) 100%), url("/assets/images/home-hero-bg.webp");
+        background-position: center, right top;
+        background-size: 100% 100%, auto 100%;
+        background-repeat: no-repeat;
       }
       .brand { border-radius: 8px; }
       .form-intro { padding: 22px 22px 0; }
@@ -777,26 +785,26 @@
       <section class="masthead" aria-labelledby="page-title">
         <div class="signature">API Made Simple by Openapi</div>
         <h1 id="page-title">ChatGPT on Telegram</h1>
-        <p class="lead">A fast setup page for launching your OpenAI assistant inside Telegram with the visual language of the Openapi marketplace.</p>
-        <div class="equation" aria-label="ChatGPT più Telegram uguale Openapi più emoji con occhiali da sole">
+        <p class="lead">A fast setup page for launching your OpenAI assistant inside Telegram, powered by Openapi certified APIs.</p>
+        <div class="equation" aria-label="ChatGPT plus Telegram plus Openapi equals cool">
           <span class="brand" title="ChatGPT"><img src="/assets/images/chatgpt.png" alt="ChatGPT"></span>
           <span class="operator">+</span>
           <span class="brand" title="Telegram"><img src="/assets/images/telegram.png" alt="Telegram"></span>
           <span class="operator">+</span>
           <span class="brand" title="Openapi"><img src="/assets/images/openapi.png" alt="Openapi"></span>
           <span class="operator">=</span>
-          <span class="brand" title="Cool"><span class="emoji" aria-label="Emoji con occhiali da sole">😎</span></span>
+          <span class="brand" title="Cool"><span class="emoji" aria-label="Cool emoji">😎</span></span>
         </div>
       </section>
 
-      <section class="panel" aria-label="Configurazione bot">
+      <section class="panel" aria-label="Bot setup">
         <div class="form-intro">
-          <h2>Configura il tuo bot</h2>
-          <p>Inserisci le credenziali necessarie: verranno usate per generare un link di avvio della chat Telegram collegata al tuo assistant.</p>
+          <h2>Configure your bot</h2>
+          <p>Enter the required credentials to generate a Telegram chat launch link connected to your assistant.</p>
           <ol class="setup-steps">
-            <li><span>1</span><strong>OpenAI API Key:</strong> la chiave del tuo account OpenAI.</li>
-            <li><span>2</span><strong>ChatGPT Prompt ID:</strong> il prompt o assistant che deve guidare le risposte.</li>
-            <li><span>3</span><strong>Telegram Bot Token:</strong> il token HTTP API creato con BotFather.</li>
+            <li><span>1</span><strong>OpenAI API Key:</strong> your OpenAI account key.</li>
+            <li><span>2</span><strong>ChatGPT Prompt ID:</strong> the prompt or assistant that should guide the replies.</li>
+            <li><span>3</span><strong>Telegram Bot Token:</strong> the HTTP API token created with BotFather.</li>
           </ol>
         </div>
         <form id="bot-form" method="post" action="/setup">
@@ -821,22 +829,22 @@
           </div>
         </form>
 
-        <div id="launch-box" class="launch-box" aria-label="Chat URL generato" role="dialog" aria-modal="true" aria-labelledby="launch-title" hidden>
+        <div id="launch-box" class="launch-box" aria-label="Generated chat URL" role="dialog" aria-modal="true" aria-labelledby="launch-title" hidden>
           <div class="modal-card">
             <div class="modal-head">
               <div class="modal-title-group">
-                <span class="modal-kicker">Bot pronto</span>
-                <h2 id="launch-title" class="modal-title">Apri la chat su Telegram</h2>
-                <p class="modal-copy">Il link è pronto: copialo o aprilo subito per iniziare a usare il bot.</p>
+                <span class="modal-kicker">Bot ready</span>
+                <h2 id="launch-title" class="modal-title">Open the chat on Telegram</h2>
+                <p class="modal-copy">Your link is ready. Copy it or open it now to start using the bot.</p>
               </div>
-              <button id="close-modal" class="modal-close" type="button" aria-label="Chiudi">×</button>
+              <button id="close-modal" class="modal-close" type="button" aria-label="Close">×</button>
             </div>
             <div class="modal-body">
               <a id="chat-url" class="chat-url" href="#" target="_blank" rel="noopener noreferrer"></a>
               <div class="modal-actions">
-                <button id="copy-link" class="icon-button" type="button">Copia link</button>
-                <a id="open-link" class="open-link" href="#" target="_blank" rel="noopener noreferrer">Apri Telegram</a>
-                <button id="dismiss-modal" class="secondary-button" type="button">Chiudi</button>
+                <button id="copy-link" class="icon-button" type="button">Copy link</button>
+                <a id="open-link" class="open-link" href="#" target="_blank" rel="noopener noreferrer">Open Telegram</a>
+                <button id="dismiss-modal" class="secondary-button" type="button">Close</button>
               </div>
             </div>
           </div>
@@ -898,7 +906,7 @@
           showLaunchModal();
         }
       } catch (error) {
-        statusBox.textContent = "Errore durante l'avvio del bot.";
+        statusBox.textContent = "Unable to start the bot.";
         statusBox.className = "status error";
       } finally {
         button.disabled = false;
@@ -911,11 +919,11 @@
       }
 
       await navigator.clipboard.writeText(chatUrl.href);
-      copyLink.textContent = "Copiato";
-      statusBox.textContent = "Link copiato.";
+      copyLink.textContent = "Copied";
+      statusBox.textContent = "Link copied.";
       statusBox.className = "status ok";
       window.setTimeout(() => {
-        copyLink.textContent = "Copia link";
+        copyLink.textContent = "Copy link";
       }, 1800);
     });
 

@@ -161,6 +161,85 @@ def extract_error_message(body: str) -> str:
     return str(payload)
 
 
+def is_markdown_table_separator(line: str) -> bool:
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+    if not cells:
+        return False
+
+    return all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
+
+
+def split_markdown_table_row(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def render_markdown_table(table_lines: list[str]) -> str:
+    rows = [split_markdown_table_row(line) for line in table_lines]
+    column_count = max((len(row) for row in rows), default=0)
+    normalized_rows = [row + [""] * (column_count - len(row)) for row in rows]
+    widths = [
+        max(len(row[column]) for row in normalized_rows)
+        for column in range(column_count)
+    ]
+
+    rendered_rows = []
+    for index, row in enumerate(normalized_rows):
+        rendered_rows.append(" | ".join(
+            row[column].ljust(widths[column])
+            for column in range(column_count)
+        ).rstrip())
+        if index == 0:
+            rendered_rows.append("-+-".join("-" * width for width in widths))
+
+    return f"<pre>{html.escape(chr(10).join(rendered_rows))}</pre>"
+
+
+def apply_basic_markdown(segment: str) -> str:
+    safe = html.escape(segment)
+    safe = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", safe)
+    safe = re.sub(r"__(.+?)__", r"<b>\1</b>", safe)
+    safe = re.sub(r"\*([^*\n]+)\*", r"<i>\1</i>", safe)
+    safe = re.sub(r"_([^_\n]+)_", r"<i>\1</i>", safe)
+    safe = re.sub(r"^#{1,6}\s+(.+)$", r"<b>\1</b>", safe, flags=re.MULTILINE)
+    return safe
+
+
+def format_regular_markdown(segment: str) -> str:
+    lines = segment.splitlines(keepends=True)
+    result: list[str] = []
+    pending: list[str] = []
+    index = 0
+
+    while index < len(lines):
+        current = lines[index].rstrip("\n")
+        next_line = lines[index + 1].rstrip("\n") if index + 1 < len(lines) else ""
+
+        if "|" in current and is_markdown_table_separator(next_line):
+            if pending:
+                result.append(apply_basic_markdown("".join(pending)))
+                pending = []
+
+            table_lines = [current]
+            index += 2
+            while index < len(lines):
+                candidate = lines[index].rstrip("\n")
+                if not candidate.strip() or "|" not in candidate:
+                    break
+                table_lines.append(candidate)
+                index += 1
+
+            result.append(render_markdown_table(table_lines))
+            continue
+
+        pending.append(lines[index])
+        index += 1
+
+    if pending:
+        result.append(apply_basic_markdown("".join(pending)))
+
+    return "".join(result)
+
+
 def format_for_telegram(text: str) -> str:
     # Split into code blocks (preserved as-is) and regular text segments.
     segments = re.split(r'(```(?:[^\n]*)?\n[\s\S]*?```|`[^`\n]+`)', text)
@@ -175,13 +254,7 @@ def format_for_telegram(text: str) -> str:
             else:
                 result.append(f'<code>{html.escape(segment[1:-1])}</code>')
         else:
-            safe = html.escape(segment)
-            safe = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', safe)
-            safe = re.sub(r'__(.+?)__', r'<b>\1</b>', safe)
-            safe = re.sub(r'\*([^*\n]+)\*', r'<i>\1</i>', safe)
-            safe = re.sub(r'_([^_\n]+)_', r'<i>\1</i>', safe)
-            safe = re.sub(r'^#{1,6}\s+(.+)$', r'<b>\1</b>', safe, flags=re.MULTILINE)
-            result.append(safe)
+            result.append(format_regular_markdown(segment))
 
     return ''.join(result)
 
