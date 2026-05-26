@@ -8,14 +8,14 @@
   <style>
     :root {
       color-scheme: light;
-      --page: #eef3f8;
+      --page: #f6f0fb;
       --panel: #ffffff;
       --ink: #18202f;
-      --muted: #637085;
-      --line: #d9e0ea;
-      --blue: #2481cc;
-      --green: #12a884;
-      --dark: #202938;
+      --muted: #6b5f7e;
+      --line: #ddd5ea;
+      --purple: #563e7d;
+      --purple-hover: #7b669e;
+      --dark: #070b0f;
       --focus: #f1b642;
       --danger: #b42318;
       --ok: #087f5b;
@@ -28,18 +28,60 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 20% 12%, rgba(18, 168, 132, 0.12), transparent 32%),
-        radial-gradient(circle at 82% 4%, rgba(36, 129, 204, 0.14), transparent 30%),
+        radial-gradient(circle at 15% 10%, rgba(86, 62, 125, 0.13), transparent 35%),
+        radial-gradient(circle at 85% 5%, rgba(123, 102, 158, 0.11), transparent 30%),
         var(--page);
     }
 
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--dark);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .navbar img {
+      height: 32px;
+      width: auto;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .navbar-right a {
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .navbar-right a:hover {
+      color: #fff;
+    }
+
+    /* ── Main content ── */
     main {
       width: min(1040px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 56px 0;
+      padding: 56px 0 80px;
     }
 
     .shell {
@@ -59,6 +101,7 @@
       font-size: clamp(36px, 7vw, 72px);
       line-height: 0.96;
       letter-spacing: 0;
+      color: var(--dark);
     }
 
     .equation {
@@ -80,7 +123,7 @@
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.86);
       color: var(--dark);
-      box-shadow: 0 18px 36px rgba(24, 32, 47, 0.11);
+      box-shadow: 0 18px 36px rgba(7, 11, 15, 0.13);
     }
 
     .brand img {
@@ -91,7 +134,7 @@
 
     .operator {
       min-width: 20px;
-      color: var(--dark);
+      color: var(--purple);
       font-size: 28px;
       font-weight: 900;
     }
@@ -101,11 +144,12 @@
       line-height: 1;
     }
 
+    /* ── Panel ── */
     .panel {
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
       background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 18px 48px rgba(24, 32, 47, 0.08);
+      box-shadow: 0 18px 48px rgba(86, 62, 125, 0.10);
       overflow: hidden;
       backdrop-filter: blur(14px);
     }
@@ -130,8 +174,10 @@
 
     label {
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
     }
 
     input,
@@ -145,12 +191,13 @@
       background: #fff;
       font: inherit;
       outline: none;
+      transition: border-color .2s, box-shadow .2s;
     }
 
     input:focus,
     select:focus {
-      border-color: var(--focus);
-      box-shadow: 0 0 0 3px rgba(241, 182, 66, 0.22);
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(86, 62, 125, 0.18);
     }
 
     .action-row {
@@ -162,32 +209,58 @@
       padding-top: 4px;
     }
 
+    /* ── Button ── */
     button {
+      position: relative;
+      overflow: hidden;
       min-height: 48px;
-      border: 0;
+      border: none;
       border-radius: 8px;
-      padding: 0 20px;
+      padding: 0 28px;
       color: #fff;
-      background: var(--dark);
+      background: var(--purple);
       font: inherit;
-      font-weight: 800;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       cursor: pointer;
+      z-index: 0;
+      transition: color .2s;
+    }
+
+    button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--purple-hover);
+      left: -100%;
+      top: 0;
+      height: 100%;
+      width: 0;
+      transform: skew(50deg);
+      transform-origin: top left;
+      transition: width .4s ease;
+      z-index: -1;
+    }
+
+    button:hover::before {
+      width: 200%;
     }
 
     button:hover {
-      background: #111827;
+      color: #fff;
     }
 
     button:disabled {
       cursor: wait;
-      opacity: 0.72;
+      opacity: 0.68;
     }
 
     .status {
       min-height: 24px;
       color: var(--muted);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .status.error {
@@ -198,12 +271,13 @@
       color: var(--ok);
     }
 
+    /* ── Launch box ── */
     .launch-box {
       display: none;
       gap: 12px;
       padding: 18px 24px 24px;
       border-top: 1px solid var(--line);
-      background: #f8fafc;
+      background: rgba(246, 240, 251, 0.6);
     }
 
     .launch-box.visible {
@@ -227,11 +301,12 @@
       color: var(--muted);
       background: #fff;
       text-decoration: none;
+      transition: border-color .2s, color .2s;
     }
 
     .chat-url:hover {
       color: var(--dark);
-      border-color: var(--focus);
+      border-color: var(--purple);
     }
 
     .icon-button,
@@ -242,8 +317,14 @@
       place-items: center;
       border-radius: 8px;
       color: #fff;
-      background: var(--dark);
+      background: var(--purple);
       text-decoration: none;
+      transition: background .2s;
+    }
+
+    .icon-button:hover,
+    .open-link:hover {
+      background: var(--purple-hover);
     }
 
     .icon-button svg,
@@ -253,10 +334,42 @@
       stroke: currentColor;
     }
 
+    /* ── Footer ── */
+    footer {
+      background: var(--dark);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    footer span {
+      color: rgba(255,255,255,0.45);
+      font-size: 13px;
+    }
+
+    footer a {
+      display: flex;
+      align-items: center;
+    }
+
+    footer img {
+      height: 20px;
+      width: auto;
+      opacity: 0.85;
+      transition: opacity .2s;
+    }
+
+    footer a:hover img {
+      opacity: 1;
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 720px) {
       main {
         width: min(100% - 24px, 1040px);
-        padding: 32px 0;
+        padding: 32px 0 56px;
       }
 
       .grid {
@@ -296,15 +409,31 @@
       .open-link {
         width: 100%;
       }
+
+      .navbar-right {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
+
+  <nav class="navbar" aria-label="Openapi">
+    <a href="https://openapi.com" target="_blank" rel="noopener noreferrer" aria-label="Openapi homepage">
+      <img src="/assets/logo-openapi-w.svg" alt="Openapi" width="120" height="36">
+    </a>
+    <div class="navbar-right">
+      <a href="https://openapi.com/products" target="_blank" rel="noopener noreferrer">Products</a>
+      <a href="https://console.openapi.com/register" target="_blank" rel="noopener noreferrer">Sign Up</a>
+      <a href="https://console.openapi.com/login" target="_blank" rel="noopener noreferrer">Login</a>
+    </div>
+  </nav>
+
   <main>
     <div class="shell">
       <section class="masthead" aria-labelledby="page-title">
         <h1 id="page-title">ChatGPT on Telegram</h1>
-        <div class="equation" aria-label="ChatGPT plus Telegram uguale Openapi plus emoji con occhiali da sole">
+        <div class="equation" aria-label="ChatGPT più Telegram uguale Openapi più emoji con occhiali da sole">
           <span class="brand" title="ChatGPT"><img src="/assets/images/chatgpt.png" alt="ChatGPT"></span>
           <span class="operator">+</span>
           <span class="brand" title="Telegram"><img src="/assets/images/telegram.png" alt="Telegram"></span>
@@ -360,6 +489,13 @@
       </section>
     </div>
   </main>
+
+  <footer>
+    <span>Powered by</span>
+    <a href="https://openapi.com" target="_blank" rel="noopener noreferrer" aria-label="Openapi">
+      <img src="/assets/logo-openapi-w.svg" alt="Openapi">
+    </a>
+  </footer>
 
   <script>
     const form = document.querySelector("#bot-form");
