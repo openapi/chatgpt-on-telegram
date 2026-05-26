@@ -1,6 +1,7 @@
 import html
 import json
 import os
+import random
 import re
 import time
 import uuid
@@ -31,6 +32,25 @@ OPENAI_API_KEY = (
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", DEFAULT_MODEL).strip()
 
 LAST_RESPONSE_IDS: dict[int, str] = {}
+
+THINKING_PHRASES = [
+    "Ottimo, dammi un momento per riflettere 🤔",
+    "Ci penso subito...",
+    "Elaboro e sono subito da te!",
+    "Un secondo, sto pensando... 💭",
+    "Interessante! Lasciami riflettere un attimo",
+    "Ricevuto! Ci vediamo tra un istante 🙂",
+    "Sto elaborando la risposta...",
+    "Perfetto, dammi un minuto per ragionare",
+    "Subito! Sto già lavorando alla risposta",
+    "Mmm, lasciami pensare... 🧠",
+    "In arrivo! Sto elaborando la tua richiesta",
+    "Ci sto, dammi solo qualche secondo",
+]
+
+
+def random_thinking_phrase() -> str:
+    return random.choice(THINKING_PHRASES)
 
 
 def log_event(message: str) -> None:
@@ -357,6 +377,7 @@ async def answer_with_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     chat_id = update.effective_chat.id if update.effective_chat else 0
     log_event(f"Received text message from chat_id={chat_id}")
+    await update.message.reply_text(random_thinking_phrase())
     answer = ask_gpt(update.message.text, chat_id)
     try:
         await update.message.reply_text(format_for_telegram(answer), parse_mode="HTML")
