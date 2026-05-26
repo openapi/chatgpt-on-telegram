@@ -41,7 +41,7 @@ NGROK_DOMAIN ?=
 WEBHOOK_BASE_URL ?=
 NGROK_API_URL ?= http://127.0.0.1:4040/api/tunnels
 
-.PHONY: install kill-old start docker-start docker-stop
+.PHONY: install kill-old start test docker-start docker-stop
 
 install:
 	python3 -m venv .venv
@@ -54,6 +54,9 @@ start: kill-old
 	@set -eu; \
 	WEBHOOK_URL="$$(NGROK_DOMAIN="$(NGROK_DOMAIN)" NGROK_API_URL="$(NGROK_API_URL)" PORT="$(PORT)" python3 scripts/resolve_ngrok_url.py)"; \
 	WEBHOOK_BASE_URL="$$WEBHOOK_URL" SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" DATA_PATH="$(DATA_PATH)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
+
+test:
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
 
 docker-start:
 	@if [ -z "$(WEBHOOK_BASE_URL)" ]; then \
