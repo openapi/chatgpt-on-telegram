@@ -466,7 +466,7 @@
       width: min(1180px, 100%);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 54px;
       align-items: center;
     }
@@ -533,7 +533,56 @@
       backdrop-filter: none;
     }
 
-    form { gap: 20px; padding: 30px; }
+    .form-intro {
+      display: grid;
+      gap: 12px;
+      padding: 30px 30px 0;
+    }
+
+    .form-intro h2 {
+      margin: 0;
+      color: var(--dark);
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    .form-intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .setup-steps {
+      display: grid;
+      gap: 8px;
+      margin: 4px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .setup-steps li {
+      display: flex;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .setup-steps span {
+      display: grid;
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--dark);
+      background: var(--brand);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    form { gap: 20px; padding: 24px 30px 30px; }
     label { letter-spacing: 0; }
     input, select { min-height: 52px; background: #fdfefe; }
 
@@ -560,11 +609,137 @@
     button:hover { transform: translateY(-1px); }
     .launch-box { padding: 20px 30px 30px; background: #f7f8fb; }
     .chat-url:hover { border-color: var(--brand); }
+
+    body.modal-open { overflow: hidden; }
+
+    .launch-box {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(6, 19, 31, 0.70);
+    }
+
+    .launch-box.visible { display: grid; }
+
+    .modal-card {
+      width: min(100%, 560px);
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 34px 90px rgba(0, 0, 0, 0.32);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 26px 28px 16px;
+    }
+
+    .modal-title-group { display: grid; gap: 8px; }
+
+    .modal-kicker {
+      color: var(--brand-hover);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .modal-title {
+      margin: 0;
+      color: var(--dark);
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .modal-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .modal-close {
+      display: grid;
+      flex: 0 0 40px;
+      width: 40px;
+      height: 40px;
+      min-height: 40px;
+      place-items: center;
+      border: 1px solid var(--line);
+      padding: 0;
+      color: var(--dark);
+      background: #f7f8fb;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .modal-close:hover { background: #edf1f5; transform: none; }
+
+    .modal-body {
+      display: grid;
+      gap: 18px;
+      padding: 0 28px 28px;
+    }
+
+    .chat-url {
+      min-height: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--ink);
+      background: #f7f8fb;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .modal-actions .icon-button,
+    .modal-actions .open-link,
+    .modal-actions .secondary-button {
+      display: inline-flex;
+      width: auto;
+      height: 52px;
+      min-height: 52px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .modal-actions .secondary-button {
+      border: 1px solid var(--line);
+      color: var(--dark);
+      background: #fff;
+    }
+
+    .modal-actions .secondary-button:hover {
+      background: #f7f8fb;
+      transform: none;
+    }
+
     footer { background: var(--dark); }
 
     @media (max-width: 980px) {
       .shell { grid-template-columns: 1fr; gap: 36px; }
-      .panel { width: min(100%, 620px); }
+      .panel { width: 100%; }
     }
 
     @media (max-width: 720px) {
@@ -575,7 +750,12 @@
         background: linear-gradient(180deg, rgba(6, 19, 31, 0.96) 0%, rgba(6, 19, 31, 0.84) 100%), url("/assets/images/home-hero-bg.webp") center top / cover no-repeat, var(--dark);
       }
       .brand { border-radius: 8px; }
-      .launch-box { padding: 18px 22px 22px; }
+      .form-intro { padding: 22px 22px 0; }
+      form { padding: 20px 22px 22px; }
+      .launch-box { padding: 18px; }
+      .modal-head { padding: 22px 22px 14px; }
+      .modal-body { padding: 0 22px 22px; }
+      .modal-actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -602,14 +782,23 @@
           <span class="brand" title="ChatGPT"><img src="/assets/images/chatgpt.png" alt="ChatGPT"></span>
           <span class="operator">+</span>
           <span class="brand" title="Telegram"><img src="/assets/images/telegram.png" alt="Telegram"></span>
-          <span class="operator">=</span>
-          <span class="brand" title="Openapi"><img src="/assets/images/openapi.png" alt="Openapi"></span>
           <span class="operator">+</span>
+          <span class="brand" title="Openapi"><img src="/assets/images/openapi.png" alt="Openapi"></span>
+          <span class="operator">=</span>
           <span class="brand" title="Cool"><span class="emoji" aria-label="Emoji con occhiali da sole">😎</span></span>
         </div>
       </section>
 
       <section class="panel" aria-label="Configurazione bot">
+        <div class="form-intro">
+          <h2>Configura il tuo bot</h2>
+          <p>Inserisci le credenziali necessarie: verranno usate per generare un link di avvio della chat Telegram collegata al tuo assistant.</p>
+          <ol class="setup-steps">
+            <li><span>1</span><strong>OpenAI API Key:</strong> la chiave del tuo account OpenAI.</li>
+            <li><span>2</span><strong>ChatGPT Prompt ID:</strong> il prompt o assistant che deve guidare le risposte.</li>
+            <li><span>3</span><strong>Telegram Bot Token:</strong> il token HTTP API creato con BotFather.</li>
+          </ol>
+        </div>
         <form id="bot-form" method="post" action="/setup">
           <div class="field">
             <label for="openai_api_key">OpenAI API Key</label>
@@ -632,23 +821,24 @@
           </div>
         </form>
 
-        <div id="launch-box" class="launch-box" aria-label="Chat URL generato">
-          <label for="chat-url">Chat URL</label>
-          <div class="launch-row">
-            <a id="chat-url" class="chat-url" href="#" target="_blank" rel="noopener noreferrer"></a>
-            <button id="copy-link" class="icon-button" type="button" title="Copia link" aria-label="Copia link">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-            <a id="open-link" class="open-link" href="#" target="_blank" rel="noopener noreferrer" title="Apri link" aria-label="Apri link">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M15 3h6v6"></path>
-                <path d="M10 14 21 3"></path>
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              </svg>
-            </a>
+        <div id="launch-box" class="launch-box" aria-label="Chat URL generato" role="dialog" aria-modal="true" aria-labelledby="launch-title" hidden>
+          <div class="modal-card">
+            <div class="modal-head">
+              <div class="modal-title-group">
+                <span class="modal-kicker">Bot pronto</span>
+                <h2 id="launch-title" class="modal-title">Apri la chat su Telegram</h2>
+                <p class="modal-copy">Il link è pronto: copialo o aprilo subito per iniziare a usare il bot.</p>
+              </div>
+              <button id="close-modal" class="modal-close" type="button" aria-label="Chiudi">×</button>
+            </div>
+            <div class="modal-body">
+              <a id="chat-url" class="chat-url" href="#" target="_blank" rel="noopener noreferrer"></a>
+              <div class="modal-actions">
+                <button id="copy-link" class="icon-button" type="button">Copia link</button>
+                <a id="open-link" class="open-link" href="#" target="_blank" rel="noopener noreferrer">Apri Telegram</a>
+                <button id="dismiss-modal" class="secondary-button" type="button">Chiudi</button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -670,6 +860,22 @@
     const chatUrl = document.querySelector("#chat-url");
     const copyLink = document.querySelector("#copy-link");
     const openLink = document.querySelector("#open-link");
+    const closeModal = document.querySelector("#close-modal");
+    const dismissModal = document.querySelector("#dismiss-modal");
+
+    function showLaunchModal() {
+      launchBox.hidden = false;
+      launchBox.classList.add("visible");
+      document.body.classList.add("modal-open");
+      copyLink.focus();
+    }
+
+    function hideLaunchModal() {
+      launchBox.classList.remove("visible");
+      launchBox.hidden = true;
+      document.body.classList.remove("modal-open");
+      button.focus();
+    }
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -689,7 +895,7 @@
           chatUrl.textContent = payload.chat_url;
           chatUrl.href = payload.chat_url;
           openLink.href = payload.chat_url;
-          launchBox.classList.add("visible");
+          showLaunchModal();
         }
       } catch (error) {
         statusBox.textContent = "Errore durante l'avvio del bot.";
@@ -705,8 +911,27 @@
       }
 
       await navigator.clipboard.writeText(chatUrl.href);
+      copyLink.textContent = "Copiato";
       statusBox.textContent = "Link copiato.";
       statusBox.className = "status ok";
+      window.setTimeout(() => {
+        copyLink.textContent = "Copia link";
+      }, 1800);
+    });
+
+    closeModal.addEventListener("click", hideLaunchModal);
+    dismissModal.addEventListener("click", hideLaunchModal);
+
+    launchBox.addEventListener("click", (event) => {
+      if (event.target === launchBox) {
+        hideLaunchModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !launchBox.hidden) {
+        hideLaunchModal();
+      }
     });
   </script>
 </body>
