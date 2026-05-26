@@ -53,7 +53,6 @@ kill-old:
 start: kill-old
 	@set -eu; \
 	WEBHOOK_URL="$$(NGROK_DOMAIN="$(NGROK_DOMAIN)" NGROK_API_URL="$(NGROK_API_URL)" PORT="$(PORT)" python3 scripts/resolve_ngrok_url.py)"; \
-	echo "Using WEBHOOK_BASE_URL=$$WEBHOOK_URL"; \
 	WEBHOOK_BASE_URL="$$WEBHOOK_URL" SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" DATA_PATH="$(DATA_PATH)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
 
 docker-start:

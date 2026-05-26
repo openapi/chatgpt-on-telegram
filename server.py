@@ -675,6 +675,38 @@ def send_telegram_message(
     telegram_api_request(telegram_token, "sendMessage", payload)
 
 
+def send_telegram_chat_action(telegram_token: str, chat_id: int | str, action: str = "typing") -> None:
+    telegram_api_request(
+        telegram_token,
+        "sendChatAction",
+        {
+            "chat_id": chat_id,
+            "action": action,
+        },
+    )
+
+
+def start_typing_indicator(telegram_token: str, chat_id: int | str, bot_id: str) -> threading.Event:
+    stop_event = threading.Event()
+
+    def keep_typing() -> None:
+        while not stop_event.is_set():
+            try:
+                send_telegram_chat_action(telegram_token, chat_id)
+            except ValueError as error:
+                print(f"Unable to send typing action bot_id={bot_id} chat_id={chat_id}: {error}", flush=True)
+                return
+            stop_event.wait(4)
+
+    thread = threading.Thread(
+        target=keep_typing,
+        name=f"telegram-typing-{bot_id}",
+        daemon=True,
+    )
+    thread.start()
+    return stop_event
+
+
 def normalize_setup(form: dict[str, str]) -> tuple[bool, str, dict[str, str]]:
     required_fields = {
         "chatgpt_prompt_id": "ChatGPT Prompt ID",
@@ -785,6 +817,7 @@ def process_webhook_update(bot_id: str, update: dict) -> None:
         return
 
     print(f"Webhook message bot_id={bot_id} chat_id={chat_id} chars={len(text)}", flush=True)
+    typing_stop = start_typing_indicator(telegram_token, chat_id, bot_id)
     try:
         send_telegram_message(telegram_token, chat_id, random_thinking_phrase())
     except ValueError as error:
@@ -793,12 +826,15 @@ def process_webhook_update(bot_id: str, update: dict) -> None:
     session = load_session(bot_id, str(chat_id))
     recent_messages = get_recent_messages(session, int(time.time()))
 
-    answer, _response_id = ask_gpt_stateless(
-        text,
-        f"{bot_id}:{chat_id}",
-        config,
-        context_messages=recent_messages,
-    )
+    try:
+        answer, _response_id = ask_gpt_stateless(
+            text,
+            f"{bot_id}:{chat_id}",
+            config,
+            context_messages=recent_messages,
+        )
+    finally:
+        typing_stop.set()
     save_recent_exchange(bot_id, str(chat_id), recent_messages, text, answer)
 
     formatted = format_for_telegram(answer)
