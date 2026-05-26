@@ -4,7 +4,7 @@
   </a>
 
   <h1>ChatGPT on Telegram</h1>
-  <h4>The command-line interface to interact with <a href="https://openapi.com/">Openapi®</a> APIs directly from your terminal</h4>
+  <h4>Connect Telegram bots to GPT with the power of certified <a href="https://openapi.com/">Openapi®</a> APIs</h4>
 
 [![License](https://img.shields.io/github/license/openapi/chatgpt-on-telegram?ts=1771243284)](LICENSE)
 [![Linux Foundation Member](https://img.shields.io/badge/Linux%20Foundation-Silver%20Member-003778?logo=linux-foundation&logoColor=white)](https://www.linuxfoundation.org/about/members)
