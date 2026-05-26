@@ -414,6 +414,169 @@
         display: none;
       }
     }
+  
+    /* Openapi signature refresh */
+    :root {
+      --page: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #697386;
+      --line: #e6e9ef;
+      --dark: #06131f;
+      --brand: #05c6a4;
+      --brand-hover: #04aa8d;
+      --focus: #05c6a4;
+    }
+
+    body {
+      font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--page);
+    }
+
+    .navbar {
+      position: relative;
+      z-index: 2;
+      min-height: 92px;
+      padding: 0 max(24px, calc((100vw - 1180px) / 2));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      background: var(--dark);
+    }
+
+    .navbar img { height: 42px; }
+
+    .navbar-right a {
+      font-size: 14px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    main {
+      position: relative;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 84px 24px 96px;
+      overflow: hidden;
+      background: linear-gradient(90deg, rgba(6, 19, 31, 0.96) 0%, rgba(6, 19, 31, 0.88) 48%, rgba(6, 19, 31, 0.55) 100%), url("/assets/images/home-hero-bg.webp") center / cover no-repeat, var(--dark);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+      gap: 54px;
+      align-items: center;
+    }
+
+    .masthead { justify-items: start; text-align: left; gap: 24px; }
+
+    .signature {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      padding: 0 14px;
+      color: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .signature::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 5px rgba(5, 198, 164, 0.16);
+    }
+
+    h1 {
+      max-width: 760px;
+      color: #fff;
+      font-size: clamp(44px, 7vw, 86px);
+      font-weight: 700;
+      line-height: 0.98;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.80);
+      font-size: clamp(19px, 2.2vw, 28px);
+      line-height: 1.28;
+    }
+
+    .equation { justify-content: flex-start; color: rgba(255, 255, 255, 0.72); }
+
+    .brand {
+      width: 68px;
+      height: 68px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 20px 42px rgba(0, 0, 0, 0.18);
+    }
+
+    .operator { color: var(--brand); }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.20);
+      backdrop-filter: none;
+    }
+
+    form { gap: 20px; padding: 30px; }
+    label { letter-spacing: 0; }
+    input, select { min-height: 52px; background: #fdfefe; }
+
+    input:focus, select:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px rgba(5, 198, 164, 0.16);
+    }
+
+    button, .icon-button, .open-link {
+      color: var(--dark);
+      background: var(--brand);
+      border-radius: 8px;
+      letter-spacing: 0;
+    }
+
+    button { min-height: 52px; transition: background .2s, transform .2s; }
+    button::before { display: none; }
+
+    button:hover, .icon-button:hover, .open-link:hover {
+      background: var(--brand-hover);
+      color: var(--dark);
+    }
+
+    button:hover { transform: translateY(-1px); }
+    .launch-box { padding: 20px 30px 30px; background: #f7f8fb; }
+    .chat-url:hover { border-color: var(--brand); }
+    footer { background: var(--dark); }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; gap: 36px; }
+      .panel { width: min(100%, 620px); }
+    }
+
+    @media (max-width: 720px) {
+      .navbar { min-height: 76px; padding: 0 18px; }
+      .navbar img { height: 34px; }
+      main {
+        padding: 48px 18px 64px;
+        background: linear-gradient(180deg, rgba(6, 19, 31, 0.96) 0%, rgba(6, 19, 31, 0.84) 100%), url("/assets/images/home-hero-bg.webp") center top / cover no-repeat, var(--dark);
+      }
+      .brand { border-radius: 8px; }
+      .launch-box { padding: 18px 22px 22px; }
+    }
   </style>
 </head>
 <body>
@@ -432,7 +595,9 @@
   <main>
     <div class="shell">
       <section class="masthead" aria-labelledby="page-title">
+        <div class="signature">API Made Simple by Openapi</div>
         <h1 id="page-title">ChatGPT on Telegram</h1>
+        <p class="lead">A fast setup page for launching your OpenAI assistant inside Telegram with the visual language of the Openapi marketplace.</p>
         <div class="equation" aria-label="ChatGPT più Telegram uguale Openapi più emoji con occhiali da sole">
           <span class="brand" title="ChatGPT"><img src="/assets/images/chatgpt.png" alt="ChatGPT"></span>
           <span class="operator">+</span>
