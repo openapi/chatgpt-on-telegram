@@ -36,6 +36,10 @@ PIP ?= ./.venv/bin/python -m pip
 HOST ?= 127.0.0.1
 PORT ?= 8000
 SERVER_SECRET_KEY ?= local-development-secret
+DATA_PATH ?= ./data
+NGROK_DOMAIN ?=
+WEBHOOK_BASE_URL ?=
+NGROK_API_URL ?= http://127.0.0.1:4040/api/tunnels
 
 .PHONY: install kill-old start docker-start docker-stop
 
@@ -45,13 +49,20 @@ install:
 
 kill-old:
 	@pkill -f "$(CURDIR)/[s]erver.py" || true
-	@pkill -f "$(CURDIR)/[b]ot.py" || true
 
 start: kill-old
-	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
+	@set -eu; \
+	WEBHOOK_URL="$$(NGROK_DOMAIN="$(NGROK_DOMAIN)" NGROK_API_URL="$(NGROK_API_URL)" PORT="$(PORT)" python3 scripts/resolve_ngrok_url.py)"; \
+	echo "Using WEBHOOK_BASE_URL=$$WEBHOOK_URL"; \
+	WEBHOOK_BASE_URL="$$WEBHOOK_URL" SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" DATA_PATH="$(DATA_PATH)" $(PYTHON) server.py --host $(HOST) --port $(PORT)
 
 docker-start:
-	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" docker compose -f compose.yml up --build
+	@if [ -z "$(WEBHOOK_BASE_URL)" ]; then \
+		echo "WEBHOOK_BASE_URL is required for Docker/prod because Telegram webhooks require HTTPS."; \
+		echo "Example: make docker-start WEBHOOK_BASE_URL=https://example.com"; \
+		exit 1; \
+	fi
+	SERVER_SECRET_KEY="$(SERVER_SECRET_KEY)" WEBHOOK_BASE_URL="$(WEBHOOK_BASE_URL)" DATA_PATH="$(DATA_PATH)" docker compose -f compose.yml up --build
 
 docker-stop:
 	docker compose -f compose.yml down
