@@ -6,8 +6,8 @@
   <h1>ChatGPT on Telegram</h1>
   <h4>Connect Telegram bots to GPT with the power of certified <a href="https://openapi.com/">Openapi®</a> APIs</h4>
 
-[![License](https://img.shields.io/github/license/openapi/chatgpt-on-telegram?ts=1771243284)](LICENSE)
 [![Build](https://github.com/openapi/chatgpt-on-telegram/actions/workflows/build.yml/badge.svg)](https://github.com/openapi/chatgpt-on-telegram/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/openapi/chatgpt-on-telegram?ts=1771243284)](LICENSE)
 [![Linux Foundation Member](https://img.shields.io/badge/Linux%20Foundation-Silver%20Member-003778?logo=linux-foundation&logoColor=white)](https://www.linuxfoundation.org/about/members)
 </div>
 
