@@ -5,4 +5,8 @@ services:
       - "8000:8000"
     environment:
       SERVER_SECRET_KEY: ${SERVER_SECRET_KEY:?required}
+      DATA_PATH: ${CONTAINER_DATA_PATH:-/data}
+      WEBHOOK_BASE_URL: ${WEBHOOK_BASE_URL:-}
+    volumes:
+      - ${DATA_PATH:-./data}:${CONTAINER_DATA_PATH:-/data}
     restart: unless-stopped
